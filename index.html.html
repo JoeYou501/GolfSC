@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>S&C Coach 專業圖卡產生器</title>
+    <title>S&C Coach 旗艦產生器</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&family=Noto+Serif+TC:wght@700;900&display=swap" rel="stylesheet">
@@ -21,15 +21,13 @@
         }
     </script>
     <style>
-        body { background-color: #e2e8f0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding-bottom: 50px; }
-        /* 4:5 比例設定 */
-        #poster-card { width: 720px; min-height: 900px; background-color: #fdfbf7; position: relative; }
-        .point-row { display: flex; align-items: flex-start; gap: 1.5rem; }
+        body { background-color: #e2e8f0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding-bottom: 50px; font-family: 'Noto Sans TC', sans-serif; }
+        #poster-card { width: 720px; min-height: 900px; background-color: #fdfbf7; position: relative; flex-shrink: 0; }
+        .point-row { display: flex; align-items: flex-start; gap: 1.5rem; transition: opacity 0.3s; }
         .number-box { 
             flex-shrink: 0; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
-            background-color: #3d5a4b; color: #fdfbf7; font-weight: 800; border-radius: 0px; line-height: 1; margin-top: 4px;
+            background-color: #3d5a4b; color: #fdfbf7; font-weight: 800; line-height: 1; margin-top: 4px;
         }
-        /* 手機版縮放預覽 */
         @media (max-width: 768px) {
             #poster-card { transform: scale(0.5); transform-origin: top center; margin-bottom: -450px; }
             .editor-container { width: 95% !important; }
@@ -40,143 +38,180 @@
 
     <div class="editor-container mt-6 mb-10 w-full max-w-[720px] bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-200">
         <div class="bg-primary p-4 text-white flex justify-between items-center cursor-pointer" onclick="toggleEditor()">
-            <h2 class="font-bold flex items-center gap-2">🏋️ 教練專屬內容編輯器</h2>
-            <span id="editor-toggle">▼ 收合面板</span>
+            <h2 class="font-bold flex items-center gap-2 text-sm">🚀 教練品牌旗艦產生器</h2>
+            <span id="editor-toggle" class="text-xs opacity-70">▼ 收合面板</span>
         </div>
         
-        <div id="editor-body" class="p-6 space-y-5 transition-all">
+        <div id="editor-body" class="p-6 space-y-6">
+            
+            <div class="bg-primary/5 p-4 rounded-2xl border border-primary/10">
+                <label class="text-[10px] font-bold text-primary/60 uppercase tracking-widest">✨ AI 智慧萃取控制項</label>
+                <textarea id="ai-raw-input" rows="3" class="w-full mt-2 p-3 border-2 border-dashed border-primary/20 rounded-xl outline-none focus:border-secondary text-sm bg-white/50" placeholder="貼上長文筆記、科學文獻或訓練心得..."></textarea>
+                <button onclick="extractContent()" class="w-full mt-2 bg-primary text-white py-2 rounded-lg font-bold text-xs hover:bg-opacity-90 transition-all shadow-md">自動解析並填入下方欄位</button>
+            </div>
+
             <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">分類標籤</label>
-                    <select id="in-tag" onchange="sync()" class="w-full mt-1 p-2 border rounded-lg outline-none text-sm font-bold text-primary">
-                        <option value="GOLF PERFORMANCE">高爾夫專項表現</option>
-                        <option value="STRENGTH SCIENCE">肌力科學實證</option>
-                        <option value="COACH'S NOTE">教練訓練日誌</option>
-                        <option value="BIOMECHANICS">生物力學分析</option>
-                    </select>
+                <div class="bg-gray-50 p-3 rounded-xl border border-gray-100">
+                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">分頁導覽 (當前 / 總數)</label>
+                    <div class="flex items-center gap-2">
+                        <input id="in-curr-page" type="number" oninput="sync()" class="w-full p-2 border rounded-lg outline-none text-center font-bold text-primary text-sm" value="1">
+                        <span class="text-gray-300">/</span>
+                        <input id="in-total-page" type="number" oninput="sync()" class="w-full p-2 border rounded-lg outline-none text-center font-bold text-gray-400 text-sm" value="3">
+                    </div>
                 </div>
-                <div>
-                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">期數編號</label>
-                    <input id="in-no" type="text" oninput="sync()" class="w-full mt-1 p-2 border rounded-lg outline-none text-sm" value="VOL. 01">
+                <div class="bg-gray-50 p-3 rounded-xl border border-gray-100">
+                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">系列期數 (VOL.)</label>
+                    <input id="in-no-num" type="number" oninput="sync()" class="w-full p-2 border rounded-lg outline-none text-center font-bold text-secondary text-sm" value="1">
                 </div>
             </div>
 
-            <div>
-                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">核心標題 (可用 &lt;br&gt; 換行)</label>
-                <input id="in-title" type="text" oninput="sync()" class="w-full mt-1 p-3 border rounded-xl outline-none focus:border-secondary font-serif font-bold" value="高爾夫揮桿速度：<br>旋轉爆發力的科學">
+            <div class="space-y-3">
+                <div class="grid grid-cols-2 gap-3">
+                    <input id="in-tag" type="text" oninput="sync()" class="p-3 border rounded-xl outline-none text-xs font-bold text-primary" placeholder="分類標籤 (如: 肌力科學)">
+                    <input id="in-ig" type="text" oninput="sync()" class="p-3 border rounded-xl outline-none text-xs text-secondary font-bold" value="@Coach_ID">
+                </div>
+                <input id="in-title" type="text" oninput="sync()" class="w-full p-3 border rounded-xl outline-none focus:border-secondary font-serif font-bold text-sm" placeholder="主標題 (支援 <br> 換行)">
+                <input id="in-p1" type="text" oninput="sync()" class="w-full p-3 border rounded-xl outline-none text-xs" placeholder="重點1|內容">
+                <input id="in-p2" type="text" oninput="sync()" class="w-full p-3 border rounded-xl outline-none text-xs" placeholder="重點2|內容">
+                <input id="in-p3" type="text" oninput="sync()" class="w-full p-3 border rounded-xl outline-none text-xs" placeholder="重點3|內容">
+                <textarea id="in-quote" oninput="sync()" class="w-full p-3 border rounded-xl outline-none text-xs italic" rows="2" placeholder="結尾金句"></textarea>
             </div>
 
-            <div class="space-y-2">
-                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">專業要點 (標題|敘述)</label>
-                <input id="in-p1" type="text" oninput="sync()" class="w-full p-3 border rounded-xl outline-none text-sm" placeholder="重點1|描述內容">
-                <input id="in-p2" type="text" oninput="sync()" class="w-full p-3 border rounded-xl outline-none text-sm" placeholder="重點2|描述內容">
-                <input id="in-p3" type="text" oninput="sync()" class="w-full p-3 border rounded-xl outline-none text-sm" placeholder="重點3|描述內容">
+            <div class="flex gap-3">
+                <button onclick="downloadImage()" class="flex-1 bg-gray-200 text-gray-700 py-4 rounded-2xl font-bold text-sm hover:bg-gray-300 transition-all">單頁下載</button>
+                <button onclick="nextPage()" class="flex-[2] bg-secondary text-white py-4 rounded-2xl font-black text-lg shadow-lg active:scale-95 transition-all">下一頁 & 下載</button>
             </div>
-
-            <div>
-                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">IG 帳號名稱</label>
-                <input id="in-ig" type="text" oninput="sync()" class="w-full mt-1 p-2 border rounded-lg outline-none text-sm" value="JoeYou501">
-            </div>
-
-            <button onclick="downloadImage()" class="w-full bg-secondary text-white py-4 rounded-2xl font-black text-lg shadow-lg active:scale-95 transition-all">
-                🚀 生成 3x 高清繁體圖卡
-            </button>
         </div>
     </div>
 
-    <div id="poster-card" class="p-14 flex flex-col border-t-[14px] border-primary relative">
-        
+    <div id="poster-card" class="p-14 flex flex-col border-t-[14px] border-primary">
         <header class="mb-14 relative z-10">
             <div class="flex items-center justify-between mb-8">
                 <div class="flex items-center gap-3">
                     <div class="h-4 w-1 bg-secondary"></div>
                     <span id="out-tag" class="font-sans text-primary tracking-[0.4em] text-[12px] font-black uppercase">GOLF PERFORMANCE</span>
                 </div>
-                <span id="out-no" class="font-sans text-secondary/50 text-[10px] font-bold tracking-widest">VOL. 01</span>
+                <span id="out-no" class="font-sans text-secondary/50 text-[11px] font-bold tracking-widest uppercase">VOL. 01</span>
             </div>
-            <h1 id="out-title" class="font-serif text-primary text-[44px] font-black leading-[1.2] mb-6">高爾夫揮桿速度：<br>旋轉爆發力的科學</h1>
+            <h1 id="out-title" class="font-serif text-primary text-[44px] font-black leading-[1.2] mb-6 tracking-tight italic">請開始萃取內容</h1>
             <div class="w-16 h-1 bg-secondary/30 mb-6"></div>
         </header>
 
         <main class="flex-grow space-y-12 relative z-10">
-            <div class="point-row">
-                <div class="number-box">01</div>
-                <div>
-                    <h3 id="out-p1t" class="font-serif text-[22px] font-bold text-primary mb-2">請輸入重點標題</h3>
-                    <p id="out-p1c" class="font-sans text-primary/80 text-[17px] leading-relaxed max-w-[480px]">請在上方輸入框使用「標題|內容」格式填寫。</p>
-                </div>
-            </div>
-            <div class="point-row">
-                <div class="number-box">02</div>
-                <div>
-                    <h3 id="out-p2t" class="font-serif text-[22px] font-bold text-primary mb-2">科學化監控</h3>
-                    <p id="out-p2c" class="font-sans text-primary/80 text-[17px] leading-relaxed max-w-[480px]">透過數據分析，精準掌握訓練負荷與進度。</p>
-                </div>
-            </div>
-            <div class="point-row">
-                <div class="number-box">03</div>
-                <div>
-                    <h3 id="out-p3t" class="font-serif text-[22px] font-bold text-primary mb-2">專向爆發力</h3>
-                    <p id="out-p3c" class="font-sans text-primary/80 text-[17px] leading-relaxed max-w-[480px]">結合肌力與技術，將體能轉化為賽場表現。</p>
-                </div>
-            </div>
+            <div id="row1" class="point-row"> <div class="number-box">01</div> <div> <h3 id="out-p1t" class="font-serif text-[22px] font-bold text-primary mb-2">重點一</h3> <p id="out-p1c" class="font-sans text-primary/80 text-[17px] leading-relaxed max-w-[480px]">內容將顯示在此</p> </div> </div>
+            <div id="row2" class="point-row"> <div class="number-box">02</div> <div> <h3 id="out-p2t" class="font-serif text-[22px] font-bold text-primary mb-2">重點二</h3> <p id="out-p2c" class="font-sans text-primary/80 text-[17px] leading-relaxed max-w-[480px]">內容將顯示在此</p> </div> </div>
+            <div id="row3" class="point-row"> <div class="number-box">03</div> <div> <h3 id="out-p3t" class="font-serif text-[22px] font-bold text-primary mb-2">重點三</h3> <p id="out-p3c" class="font-sans text-primary/80 text-[17px] leading-relaxed max-w-[480px]">內容將顯示在此</p> </div> </div>
         </main>
 
-        <footer class="mt-16 flex flex-col gap-8 relative z-10">
-            <div class="border-y border-primary/10 py-6 text-center">
-                <p id="out-quote" class="font-serif text-primary/90 text-xl font-bold italic leading-relaxed">
-                    「訓練不只是汗水，更是對身體極限的精準雕琢。」
-                </p>
+        <footer class="mt-16 flex justify-between items-end relative z-10">
+            <div class="flex flex-col gap-3">
+                <div id="out-quote-box" class="border-l-2 border-primary/20 pl-4 py-1 mb-4 hidden">
+                    <p id="out-quote" class="font-serif text-primary/60 text-base italic leading-relaxed"></p>
+                </div>
+                <div class="flex flex-col gap-2">
+                    <span class="font-sans text-[9px] tracking-[0.5em] text-primary/30 uppercase font-black">Professional Coaching</span>
+                    <div class="flex items-center gap-1.5">
+                        <div id="page-indicator" class="bg-primary text-bglight text-[10px] font-bold px-2 py-0.5 tracking-tighter italic">1 / 3</div>
+                        <div class="h-[1px] w-4 bg-primary/20"></div>
+                    </div>
+                </div>
             </div>
             
-            <div class="flex justify-between items-center px-2">
-                <span class="font-sans text-[9px] tracking-[0.5em] text-primary/30 uppercase font-black">Professional S&C Coaching</span>
-                <div class="flex items-center gap-2.5 border-b-2 border-secondary/20 pb-1.5">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#c59d5f" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <rect width="20" height="20" x="2" y="2" rx="5" ry="5"></rect>
-                        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
-                        <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"></line>
-                    </svg>
-                    <span id="out-ig" class="font-serif text-secondary text-base font-black tracking-wider">Coach_YourID</span>
-                </div>
+            <div class="flex items-center gap-2.5 border-b-2 border-secondary/20 pb-1.5">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c59d5f" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"></line></svg>
+                <span id="out-ig" class="font-serif text-secondary text-base font-black tracking-wider">Coach_ID</span>
             </div>
         </footer>
     </div>
 
     <script>
-        function toggleEditor() {
-            const body = document.getElementById('editor-body');
-            const toggle = document.getElementById('editor-toggle');
-            body.classList.toggle('hidden');
-            toggle.innerText = body.classList.contains('hidden') ? "▲ 展開編輯" : "▼ 收合面板";
+        // 頁面載入回復記憶
+        window.onload = function() {
+            const lastNo = localStorage.getItem('sc_last_no') || 1;
+            const lastIg = localStorage.getItem('sc_last_ig') || "@Coach_ID";
+            document.getElementById('in-no-num').value = lastNo;
+            document.getElementById('in-ig').value = lastIg;
+            sync();
+        }
+
+        function toggleEditor() { document.getElementById('editor-body').classList.toggle('hidden'); }
+
+        // AI 萃取功能 (模擬邏輯)
+        function extractContent() {
+            const raw = document.getElementById('ai-raw-input').value;
+            if(!raw) return alert("請先貼上內容");
+            
+            // 這裡模擬 AI 萃取後的填入
+            document.getElementById('in-title').value = "高爾夫揮桿速度：<br>旋轉爆發力的傳導鏈";
+            document.getElementById('in-p1').value = "胸椎活動度|確保旋轉幅度並保護腰椎。";
+            document.getElementById('in-p2').value = "地面反作用力|下肢蹬地是力量的起點。";
+            document.getElementById('in-p3').value = "抗旋轉核心|高速下維持中軸穩定的關鍵。";
+            document.getElementById('in-quote').value = "最強大的力量，源自於最穩定的傳導。";
+            
+            sync();
+            alert("✨ AI 已完成內容自動填入！");
         }
 
         function sync() {
-            document.getElementById('out-tag').innerText = document.getElementById('in-tag').value;
-            document.getElementById('out-no').innerText = document.getElementById('in-no').value;
-            document.getElementById('out-title').innerHTML = document.getElementById('in-title').value;
+            const curr = document.getElementById('in-curr-page').value;
+            const total = document.getElementById('in-total-page').value;
+            const volNum = document.getElementById('in-no-num').value.toString().padStart(2, '0');
+            
+            document.getElementById('page-indicator').innerText = `${curr} / ${total}`;
+            document.getElementById('out-no').innerText = `VOL. ${volNum}`;
+            document.getElementById('out-tag').innerText = document.getElementById('in-tag').value || "S&C SCIENCE";
+            document.getElementById('out-title').innerHTML = document.getElementById('in-title').value || "標題內容";
             document.getElementById('out-ig').innerText = document.getElementById('in-ig').value;
+            
+            // 金句顯示邏輯
+            const quote = document.getElementById('in-quote').value;
+            if(quote) {
+                document.getElementById('out-quote-box').classList.remove('hidden');
+                document.getElementById('out-quote').innerText = `「${quote}」`;
+            } else {
+                document.getElementById('out-quote-box').classList.add('hidden');
+            }
             
             for(let i=1; i<=3; i++) {
                 const input = document.getElementById('in-p' + i).value;
+                const row = document.getElementById(`row${i}`);
                 if(input.includes('|')) {
-                    const parts = input.split('|');
-                    document.getElementById('out-p' + i + 't').innerText = parts[0];
-                    document.getElementById('out-p' + i + 'c').innerText = parts[1];
+                    const [t, c] = input.split('|');
+                    document.getElementById(`out-p${i}t`).innerText = t;
+                    document.getElementById(`out-p${i}c`).innerText = c;
+                    row.style.display = "flex";
+                } else {
+                    row.style.display = "none";
                 }
             }
+            localStorage.setItem('sc_last_ig', document.getElementById('in-ig').value);
         }
 
         async function downloadImage() {
             const node = document.getElementById('poster-card');
+            const curr = document.getElementById('in-curr-page').value;
+            const vol = document.getElementById('in-no-num').value;
             try {
                 await document.fonts.ready;
                 const dataUrl = await htmlToImage.toPng(node, { pixelRatio: 3, backgroundColor: '#fdfbf7' });
                 const link = document.createElement('a');
-                link.download = `CoachLog-TW-${Date.now()}.png`;
+                link.download = `Vol${vol}-Page${curr}.png`;
                 link.href = dataUrl;
                 link.click();
-            } catch (err) { alert('下載失敗，請重新整理頁面'); }
+                localStorage.setItem('sc_last_no', vol);
+            } catch (err) { alert('下載失敗'); }
+        }
+
+        function nextPage() {
+            downloadImage();
+            let curr = parseInt(document.getElementById('in-curr-page').value);
+            let total = parseInt(document.getElementById('in-total-page').value);
+            if (curr < total) {
+                document.getElementById('in-curr-page').value = curr + 1;
+                sync();
+            } else {
+                alert("已完成最後一頁下載！");
+            }
         }
         sync();
     </script>
