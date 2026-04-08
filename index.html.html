@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>S&C Coach Auto-Carousel v4.2</title>
+    <title>S&C Coach Auto-Carousel v4.3</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&family=Noto+Serif+TC:wght@700;900&display=swap" rel="stylesheet">
@@ -26,6 +26,7 @@
         .point-row { display: flex; align-items: flex-start; gap: 1.5rem; transition: opacity 0.3s; }
         .number-box { flex-shrink: 0; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; background-color: #3d5a4b; color: #fdfbf7; font-weight: 800; line-height: 1; margin-top: 4px; }
         @media (max-width: 768px) { #poster-card { transform: scale(0.5); transform-origin: top center; margin-bottom: -450px; } .editor-container { width: 95% !important; } }
+        
         #auth-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #3d5a4b; z-index: 99999; display: flex; align-items: center; justify-content: center; }
     </style>
 </head>
@@ -37,7 +38,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
             </div>
             <h2 class="text-3xl font-black mb-2 font-serif text-white tracking-widest uppercase italic">Coach's Vault</h2>
-            <p class="text-white/50 text-[10px] mb-10 tracking-[0.4em] uppercase">Auto-Carousel v4.2</p>
+            <p class="text-white/50 text-[10px] mb-10 tracking-[0.4em] uppercase">Auto-Carousel v4.3</p>
             <input id="auth-input" type="password" onkeydown="if(event.key==='Enter') checkAuth()" class="w-full p-5 rounded-2xl bg-white text-primary outline-none text-center font-bold tracking-[0.5em] text-2xl mb-5 shadow-inner" placeholder="•••••••" autofocus>
             <button onclick="checkAuth()" class="w-full bg-secondary text-white py-4 rounded-2xl font-black text-xl shadow-xl hover:brightness-110 active:scale-95 transition-all">解鎖系統</button>
         </div>
@@ -45,7 +46,7 @@
 
     <div class="editor-container mt-10 mb-10 w-full max-w-[720px] bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-100">
         <div class="bg-primary p-5 text-white flex justify-between items-center cursor-pointer" onclick="toggleEditor()">
-            <h2 class="font-bold flex items-center gap-2 text-sm italic tracking-widest uppercase">📚 全自動多頁連載引擎</h2>
+            <h2 class="font-bold flex items-center gap-2 text-sm italic tracking-widest uppercase">📚 全自動多頁連載引擎 (Gemini 2.0)</h2>
             <span id="editor-toggle" class="text-[10px] px-3 py-1 bg-white/10 rounded-full border border-white/20 uppercase tracking-widest">Collapse</span>
         </div>
         
@@ -156,7 +157,6 @@
             const btnText = document.getElementById('ai-btn-text');
             btn.disabled = true; btnText.innerText = "🚀 AI 正在處理中...";
 
-            // 使用最穩定的寬鬆 Prompt
             const prompt = `請以肌力與體能教練的角度，將以下長篇文字拆解成一組「IG 多頁貼文」。
             請以 JSON 格式回應，不要包含任何 Markdown 標記，直接輸出 JSON 即可。
             結構必須精準相符：
@@ -165,7 +165,8 @@
             輸入長文：\n${raw}`;
 
             try {
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
+                // 🚀 重點修復：將模型名稱升級為最新的 gemini-2.0-flash
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
@@ -173,14 +174,12 @@
                 
                 const data = await response.json();
                 
-                // 攔截並印出真實錯誤
                 if (!response.ok) {
                     throw new Error(`Google 伺服器錯誤 [${data.error?.code || response.status}]: ${data.error?.message || '未知的 API 錯誤'}`);
                 }
                 
                 let rawText = data.candidates[0].content.parts[0].text;
                 
-                // 寬鬆解析：手動抓取 JSON 範圍，無視多餘的字元
                 const jsonMatch = rawText.match(/\{[\s\S]*\}/);
                 if (!jsonMatch) {
                     throw new Error("AI 回傳的資料格式異常，找不到有效的 JSON 結構。");
@@ -198,8 +197,7 @@
                 alert(`✨ 成功！為您拆分成了 ${aiSlidesData.length} 頁。`);
 
             } catch (err) {
-                // 直接將最真實的錯誤顯示在畫面上！
-                alert(`❌ 系統回報具體錯誤：\n\n${err.message}\n\n如果顯示是 API Key 錯誤，請回到 Google AI Studio 確認這把鑰匙是否有效。`);
+                alert(`❌ 系統回報具體錯誤：\n\n${err.message}`);
             } finally {
                 btn.disabled = false; btnText.innerText = "🪄 啟動 AI 智能分頁萃取";
             }
