@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>S&C Coach Real-AI 產生器</title>
+    <title>S&C Coach Real-AI 產生器 v3.2</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&family=Noto+Serif+TC:wght@700;900&display=swap" rel="stylesheet">
@@ -20,50 +20,234 @@
             }
         }
         
-        // --- 已鎖定安全與 API 設定 ---
+        // --- 設定區 ---
         const API_KEY = "AIzaSyCmTbpdpURA94ceS8hbpXGQF5Xlclo16Wg"; 
         const ACCESS_PASSWORD = "7788999"; 
     </script>
     <style>
         body { background-color: #e2e8f0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding-bottom: 50px; font-family: 'Noto Sans TC', sans-serif; }
-        #poster-card { width: 720px; min-height: 900px; background-color: #fdfbf7; position: relative; flex-shrink: 0; }
+        #poster-card { width: 720px; min-height: 900px; background-color: #fdfbf7; position: relative; flex-shrink: 0; box-shadow: 0 40px 100px -20px rgba(0,0,0,0.2); }
         .point-row { display: flex; align-items: flex-start; gap: 1.5rem; transition: opacity 0.3s; }
         .number-box { flex-shrink: 0; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; background-color: #3d5a4b; color: #fdfbf7; font-weight: 800; line-height: 1; margin-top: 4px; }
         @media (max-width: 768px) { #poster-card { transform: scale(0.5); transform-origin: top center; margin-bottom: -450px; } .editor-container { width: 95% !important; } }
-        #auth-overlay { position: fixed; inset: 0; background: #3d5a4b; z-index: 9999; display: flex; align-items: center; justify-content: center; color: white; transition: opacity 0.5s; }
+        
+        /* 鎖定介面強制樣式 */
+        #auth-overlay { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: #3d5a4b; z-index: 99999; display: flex; align-items: center; justify-content: center; 
+        }
     </style>
 </head>
 <body>
 
     <div id="auth-overlay">
-        <div class="text-center p-10 bg-white/10 backdrop-blur-xl rounded-[2.5rem] border border-white/20 shadow-2xl">
-            <div class="mb-6 text-secondary">
-                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mx-auto"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+        <div class="text-center p-10 bg-white/10 backdrop-blur-2xl rounded-[3rem] border border-white/20 shadow-2xl w-[90%] max-w-[420px]">
+            <div class="mb-6 text-secondary flex justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
             </div>
-            <h2 class="text-2xl font-black mb-2 font-serif tracking-widest uppercase">Coach's Vault</h2>
-            <p class="text-white/60 text-xs mb-8 tracking-widest uppercase">Personal Brand Tool v3.0</p>
-            <input id="auth-input" type="password" class="w-full p-4 rounded-2xl bg-white text-primary outline-none text-center font-bold tracking-[0.5em]" placeholder="PASSWORD">
-            <button onclick="checkAuth()" class="w-full mt-6 bg-secondary text-white py-4 rounded-2xl font-black text-lg shadow-xl active:scale-95 transition-all">進入系統</button>
+            <h2 class="text-3xl font-black mb-2 font-serif text-white tracking-widest uppercase italic">Coach's Vault</h2>
+            <p class="text-white/50 text-[10px] mb-10 tracking-[0.4em] uppercase">Private System Access</p>
+            
+            <input id="auth-input" type="password" 
+                   onkeydown="if(event.key==='Enter') checkAuth()" 
+                   class="w-full p-5 rounded-2xl bg-white text-primary outline-none text-center font-bold tracking-[0.5em] text-2xl mb-5 shadow-inner" 
+                   placeholder="•••••••" autofocus>
+            
+            <button onclick="checkAuth()" 
+                    class="w-full bg-secondary text-white py-4 rounded-2xl font-black text-xl shadow-xl hover:brightness-110 active:scale-95 transition-all">
+                UNLOCK SYSTEM
+            </button>
         </div>
     </div>
 
-    <div class="editor-container mt-6 mb-10 w-full max-w-[720px] bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-200">
-        <div class="bg-primary p-4 text-white flex justify-between items-center cursor-pointer" onclick="toggleEditor()">
-            <h2 class="font-bold flex items-center gap-2 text-sm italic">✨ REAL AI CONTENT ENGINE</h2>
-            <span id="editor-toggle" class="text-xs opacity-70 tracking-widest uppercase">COLLAPSE</span>
+    <div class="editor-container mt-10 mb-10 w-full max-w-[720px] bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-100">
+        <div class="bg-primary p-5 text-white flex justify-between items-center cursor-pointer" onclick="toggleEditor()">
+            <h2 class="font-bold flex items-center gap-2 text-sm italic tracking-widest uppercase">✨ Real-AI Engine Panel</h2>
+            <span id="editor-toggle" class="text-[10px] px-3 py-1 bg-white/10 rounded-full border border-white/20 uppercase tracking-widest">Collapse</span>
         </div>
         
-        <div id="editor-body" class="p-6 space-y-6">
-            <div class="bg-primary/5 p-4 rounded-2xl border border-primary/10">
-                <label class="text-[10px] font-bold text-primary/60 uppercase tracking-[0.2em]">貼上長文自動萃取 (Gemini Pro)</label>
-                <textarea id="ai-raw-input" rows="3" class="w-full mt-2 p-3 border-2 border-dashed border-primary/20 rounded-xl outline-none focus:border-secondary text-sm bg-white/50" placeholder="貼上運動科學、教練日誌或棒球/高爾夫新聞..."></textarea>
-                <button id="ai-btn" onclick="callRealAI()" class="w-full mt-2 bg-primary text-white py-3 rounded-xl font-bold text-xs hover:bg-opacity-90 transition-all shadow-md flex items-center justify-center gap-2">
+        <div id="editor-body" class="p-8 space-y-8">
+            <div class="bg-primary/[0.03] p-6 rounded-[2rem] border border-primary/10">
+                <label class="text-[10px] font-bold text-primary/40 uppercase tracking-[0.3em] mb-3 block">Gemini 1.5 Flash AI 萃取</label>
+                <textarea id="ai-raw-input" rows="4" class="w-full p-4 border-2 border-dashed border-primary/20 rounded-2xl outline-none focus:border-secondary text-sm bg-white" placeholder="在此貼上任何長文，AI 將自動對標您的教練品牌風格..."></textarea>
+                <button id="ai-btn" onclick="callRealAI()" class="w-full mt-3 bg-primary text-white py-4 rounded-xl font-bold text-xs hover:bg-primary/90 transition-all shadow-lg flex items-center justify-center gap-2">
                     <span id="ai-btn-text">立即聯動 AI 萃取資訊</span>
                 </button>
             </div>
 
-            <div class="grid grid-cols-2 gap-4">
-                <div class="bg-gray-50 p-3 rounded-xl">
-                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">PAGE / TOTAL</label>
-                    <div class="flex items-center gap-2 mt-1">
-                        <input id="in-curr-page" type="number" oninput="sync()" class="w-10 border-b bg-transparent text-center font-
+            <div class="grid grid-cols-2 gap-6">
+                <div class="bg-gray-50/50 p-4 rounded-2xl border border-gray-100">
+                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2">Slide Navigation</label>
+                    <div class="flex items-center gap-3">
+                        <input id="in-curr-page" type="number" oninput="sync()" class="w-12 border-b-2 border-primary/20 bg-transparent text-center font-black text-primary text-xl" value="1">
+                        <span class="text-gray-300 font-bold">/</span>
+                        <input id="in-total-page" type="number" oninput="sync()" class="w-12 border-b-2 border-gray-200 bg-transparent text-center font-black text-gray-400 text-xl" value="3">
+                    </div>
+                </div>
+                <div class="bg-gray-50/50 p-4 rounded-2xl border border-gray-100">
+                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2">Series Volume</label>
+                    <div class="flex items-center gap-2">
+                        <span class="text-secondary font-black text-sm uppercase">VOL.</span>
+                        <input id="in-no-num" type="number" oninput="sync()" class="w-full border-b-2 border-secondary/20 bg-transparent text-center font-black text-secondary text-xl" value="1">
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <input id="in-tag" type="text" oninput="sync()" class="p-4 border border-gray-100 rounded-2xl text-xs font-black text-primary uppercase tracking-widest bg-gray-50/30" placeholder="分類 (例如: BIOMECHANICS)">
+                    <input id="in-ig" type="text" oninput="sync()" class="p-4 border border-gray-100 rounded-2xl text-xs text-secondary font-black tracking-widest bg-gray-50/30" value="@JoeYou501">
+                </div>
+                <input id="in-title" type="text" oninput="sync()" class="w-full p-4 border border-gray-100 rounded-2xl focus:border-secondary font-serif font-black text-base" placeholder="標題">
+                <input id="in-p1" type="text" oninput="sync()" class="w-full p-4 border border-gray-100 rounded-2xl text-xs" placeholder="重點1|內容描述">
+                <input id="in-p2" type="text" oninput="sync()" class="w-full p-4 border border-gray-100 rounded-2xl text-xs" placeholder="重點2|內容描述">
+                <input id="in-p3" type="text" oninput="sync()" class="w-full p-4 border border-gray-100 rounded-2xl text-xs" placeholder="重點3|內容描述">
+                <input id="in-quote" type="text" oninput="sync()" class="w-full p-4 border border-gray-100 rounded-2xl text-xs italic font-serif" placeholder="結尾金句">
+            </div>
+
+            <div class="flex gap-4">
+                <button onclick="downloadImage()" class="flex-1 bg-gray-100 text-gray-500 py-5 rounded-3xl font-black text-xs uppercase tracking-[0.2em] hover:bg-gray-200 transition-all">Single Page</button>
+                <button onclick="nextPage()" class="flex-[2] bg-secondary text-white py-5 rounded-3xl font-black text-xl shadow-2xl shadow-secondary/30 active:scale-95 transition-all">NEXT & SAVE</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="poster-card" class="p-16 flex flex-col border-t-[16px] border-primary">
+        <header class="mb-14 relative z-10">
+            <div class="flex items-center justify-between mb-10">
+                <div class="flex items-center gap-4">
+                    <div class="h-5 w-1.5 bg-secondary"></div>
+                    <span id="out-tag" class="font-sans text-primary tracking-[0.4em] text-[13px] font-black uppercase">S&C SCIENCE</span>
+                </div>
+                <span id="out-no" class="font-sans text-secondary/40 text-[12px] font-black tracking-widest uppercase italic">VOL. 01</span>
+            </div>
+            <h1 id="out-title" class="font-serif text-primary text-[46px] font-black leading-[1.25] mb-8 tracking-tight">等待內容...</h1>
+            <div class="w-20 h-1.5 bg-secondary/30 mb-8"></div>
+        </header>
+        <main class="flex-grow space-y-12 relative z-10">
+            <div id="row1" class="point-row"> <div class="number-box shadow-lg shadow-primary/10">01</div> <div> <h3 id="out-p1t" class="font-serif text-[24px] font-black text-primary mb-2"></h3> <p id="out-p1c" class="font-sans text-primary/80 text-[18px] leading-relaxed max-w-[480px]"></p> </div> </div>
+            <div id="row2" class="point-row"> <div class="number-box shadow-lg shadow-primary/10">02</div> <div> <h3 id="out-p2t" class="font-serif text-[24px] font-black text-primary mb-2"></h3> <p id="out-p2c" class="font-sans text-primary/80 text-[18px] leading-relaxed max-w-[480px]"></p> </div> </div>
+            <div id="row3" class="point-row"> <div class="number-box shadow-lg shadow-primary/10">03</div> <div> <h3 id="out-p3t" class="font-serif text-[24px] font-black text-primary mb-2"></h3> <p id="out-p3c" class="font-sans text-primary/80 text-[18px] leading-relaxed max-w-[480px]"></p> </div> </div>
+        </main>
+        <footer class="mt-16 flex justify-between items-end relative z-10">
+            <div class="flex flex-col gap-3">
+                <p id="out-quote" class="font-serif text-primary/60 text-[17px] italic mb-6 max-w-[420px] leading-relaxed"></p>
+                <div class="flex items-center gap-2">
+                    <div id="page-indicator" class="bg-primary text-bglight text-[11px] font-black px-3 py-1 tracking-tighter italic">1 / 3</div>
+                    <div class="h-[1px] w-6 bg-primary/10"></div>
+                </div>
+            </div>
+            <div class="flex items-center gap-3 border-b-2 border-secondary/20 pb-2">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#c59d5f" stroke-width="2.5"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"></line></svg>
+                <span id="out-ig" class="font-serif text-secondary text-lg font-black tracking-widest uppercase italic">JoeYou501</span>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // 電腦版強制解鎖邏輯
+        function checkAuth() {
+            const input = document.getElementById('auth-input');
+            const val = input.value.trim();
+            console.log("正在嘗試解鎖..."); // 按 F12 可以看到
+            
+            if(val === ACCESS_PASSWORD) {
+                document.getElementById('auth-overlay').style.display = 'none';
+                console.log("解鎖成功！");
+                sync();
+            } else {
+                alert("密碼錯誤，請檢查是否有誤觸空格。");
+                input.value = "";
+                input.focus();
+            }
+        }
+
+        async function callRealAI() {
+            const raw = document.getElementById('ai-raw-input').value;
+            if(!raw) return alert("請貼上文字內容");
+            
+            const btn = document.getElementById('ai-btn');
+            const btnText = document.getElementById('ai-btn-text');
+            btn.disabled = true; btnText.innerText = "🚀 AI ENGINE STARTING...";
+
+            const prompt = `請以肌力與體能教練的角度，將以下文字萃取成一張資訊圖卡。
+            1. title: 一個極致專業且吸睛的標題(可插入<br>)
+            2. points: 剛好三個重點(格式: 重點標題|描述內容)
+            3. quote: 一句教練視角的深度金句。
+            輸入文字：${raw}
+            請僅以 JSON 格式輸出，屬性：title, points (Array), quote`;
+
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                });
+                
+                const data = await response.json();
+                const rawJson = data.candidates[0].content.parts[0].text.replace(/```json|```/g, '').trim();
+                const result = JSON.parse(rawJson);
+
+                document.getElementById('in-title').value = result.title;
+                document.getElementById('in-p1').value = result.points[0];
+                document.getElementById('in-p2').value = result.points[1];
+                document.getElementById('in-p3').value = result.points[2];
+                document.getElementById('in-quote').value = result.quote;
+                
+                sync();
+                alert("✨ AI 解析成功");
+            } catch (err) {
+                console.error(err);
+                alert("AI 解析失敗，請確認 API Key 狀態。");
+            } finally {
+                btn.disabled = false; btnText.innerText = "立即聯動 AI 萃取資訊";
+            }
+        }
+
+        function toggleEditor() { document.getElementById('editor-body').classList.toggle('hidden'); }
+        
+        function sync() {
+            document.getElementById('page-indicator').innerText = `${document.getElementById('in-curr-page').value} / ${document.getElementById('in-total-page').value}`;
+            document.getElementById('out-no').innerText = `VOL. ${document.getElementById('in-no-num').value.toString().padStart(2, '0')}`;
+            document.getElementById('out-tag').innerText = document.getElementById('in-tag').value || "S&C SCIENCE";
+            document.getElementById('out-title').innerHTML = document.getElementById('in-title').value || "等待內容中";
+            document.getElementById('out-ig').innerText = document.getElementById('in-ig').value;
+            document.getElementById('out-quote').innerText = document.getElementById('in-quote').value ? `「${document.getElementById('in-quote').value}」` : "";
+            
+            for(let i=1; i<=3; i++) {
+                const val = document.getElementById('in-p' + i).value;
+                const row = document.getElementById(`row${i}`);
+                if(val.includes('|')) {
+                    const [t, c] = val.split('|');
+                    document.getElementById(`out-p${i}t`).innerText = t;
+                    document.getElementById(`out-p${i}c`).innerText = c;
+                    row.style.opacity = "1";
+                    row.style.display = "flex";
+                } else { 
+                    row.style.opacity = "0";
+                    row.style.display = "none";
+                }
+            }
+        }
+
+        async function downloadImage() {
+            const node = document.getElementById('poster-card');
+            try {
+                await document.fonts.ready;
+                const dataUrl = await htmlToImage.toPng(node, { pixelRatio: 3, backgroundColor: '#fdfbf7' });
+                const link = document.createElement('a');
+                link.download = `Slide-Vol${document.getElementById('in-no-num').value}-P${document.getElementById('in-curr-page').value}.png`;
+                link.href = dataUrl; link.click();
+            } catch (err) { alert('下載出錯'); }
+        }
+
+        function nextPage() {
+            downloadImage();
+            let curr = parseInt(document.getElementById('in-curr-page').value);
+            let total = parseInt(document.getElementById('in-total-page').value);
+            if (curr < total) { document.getElementById('in-curr-page').value = curr + 1; sync(); }
+        }
+        sync();
+    </script>
+</body>
+</html>
