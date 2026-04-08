@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>S&C Coach Auto-Carousel v8.1 (Clean Edition)</title>
+    <title>S&C Coach Auto-Carousel v8.2</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&family=Noto+Serif+TC:wght@700;900&display=swap" rel="stylesheet">
@@ -23,19 +23,16 @@
         const ACCESS_PASSWORD = "7788999"; 
     </script>
     <style>
-        /* 核心排版與重整後的簡潔 CSS */
         body { background-color: #e2e8f0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding-bottom: 50px; font-family: 'Noto Sans TC', sans-serif; }
         #poster-card { width: 720px; min-height: 900px; background-color: #fdfbf7; position: relative; flex-shrink: 0; box-shadow: 0 40px 100px -20px rgba(0,0,0,0.2); }
         .point-row { display: flex; align-items: flex-start; gap: 1.5rem; }
         .number-box { flex-shrink: 0; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; background-color: #3d5a4b; color: #fdfbf7; font-weight: 800; line-height: 1; margin-top: 4px; }
         
-        /* 手機版縮放適應 */
         @media (max-width: 768px) { 
             #poster-card { transform: scale(0.5); transform-origin: top center; margin-bottom: -450px; } 
             .editor-container { width: 95% !important; } 
         }
         
-        /* 全螢幕安全鎖遮罩 */
         #auth-overlay { position: fixed; inset: 0; background: #3d5a4b; z-index: 99999; display: flex; align-items: center; justify-content: center; }
     </style>
 </head>
@@ -47,21 +44,12 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
             </div>
             <h2 class="text-2xl font-black mb-1 font-serif text-white tracking-widest uppercase italic">Coach's Vault</h2>
-            <p class="text-white/50 text-[10px] mb-6 tracking-[0.4em] uppercase">Clean Edition v8.1</p>
+            <p class="text-white/50 text-[10px] mb-6 tracking-[0.4em] uppercase">Clean Edition v8.2</p>
             
             <div class="space-y-4 mb-6">
                 <div>
                     <label class="text-white/70 text-[10px] uppercase tracking-widest mb-1 block text-left pl-2">API Key (自動存於本機)</label>
                     <input id="api-key-input" type="password" class="w-full p-4 rounded-xl bg-white/90 text-primary outline-none font-mono text-xs shadow-inner" placeholder="AIzaSy...">
-                </div>
-                <div>
-                    <label class="text-white/70 text-[10px] uppercase tracking-widest mb-1 block text-left pl-2">AI 引擎選擇</label>
-                    <select id="curated-model-select" class="w-full p-3 rounded-xl bg-white text-primary outline-none text-sm font-bold shadow-sm cursor-pointer" onchange="saveModelPref()">
-                        <option value="gemini-1.5-flash">Gemini 1.5 Flash (極速/最穩/預設先發)</option>
-                        <option value="gemini-1.5-flash-8b">Gemini 1.5 Flash-8B (輕量/處理短文用)</option>
-                        <option value="gemini-1.5-pro">Gemini 1.5 Pro (高智商/處理艱澀長文)</option>
-                        <option value="gemini-2.0-flash">Gemini 2.0 Flash (最新世代)</option>
-                    </select>
                 </div>
                 <div>
                     <label class="text-white/70 text-[10px] uppercase tracking-widest mb-1 block text-left pl-2">System Password</label>
@@ -80,6 +68,17 @@
         </div>
         
         <div id="editor-body" class="p-8 space-y-6">
+            
+            <div class="bg-gray-50 p-4 rounded-2xl border border-gray-100">
+                <label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest block mb-2">🤖 AI 引擎即時切換</label>
+                <select id="curated-model-select" class="w-full p-3 rounded-xl border border-gray-200 bg-white text-primary outline-none text-xs font-bold shadow-sm cursor-pointer transition-all focus:border-secondary" onchange="saveModelPref()">
+                    <option value="gemini-1.5-flash">Gemini 1.5 Flash (極速/最穩/預設先發)</option>
+                    <option value="gemini-1.5-flash-8b">Gemini 1.5 Flash-8B (輕量/處理短文用)</option>
+                    <option value="gemini-1.5-pro">Gemini 1.5 Pro (高智商/處理艱澀長文)</option>
+                    <option value="gemini-2.0-flash">Gemini 2.0 Flash (最新世代)</option>
+                </select>
+            </div>
+
             <div class="bg-primary/[0.03] p-6 rounded-[2rem] border border-primary/10">
                 <label class="text-[10px] font-bold text-primary/40 uppercase tracking-[0.3em] mb-3 block">貼上長文，AI 自動幫你切分成多頁 IG 貼文</label>
                 <textarea id="ai-raw-input" rows="3" class="w-full p-4 border-2 border-dashed border-primary/20 rounded-2xl outline-none focus:border-secondary text-sm bg-white" placeholder="貼上訓練科學文獻..."></textarea>
@@ -173,7 +172,10 @@
             document.getElementById('api-key-input').value = localStorage.getItem('sc_api_key') || "";
             
             const savedModel = localStorage.getItem('sc_curated_model');
-            if (savedModel) document.getElementById('curated-model-select').value = savedModel;
+            if (savedModel) {
+                const selectEl = document.getElementById('curated-model-select');
+                if(selectEl) selectEl.value = savedModel;
+            }
         };
 
         // --- 安全解鎖與設定儲存 ---
@@ -187,9 +189,8 @@
                 const keyVal = keyInput.value.trim();
                 if (!keyVal.startsWith("AIza")) return alert("請輸入有效的 Gemini API Key！");
                 
-                // 儲存至本機
+                // 儲存金鑰至本機
                 localStorage.setItem('sc_api_key', keyVal);
-                saveModelPref();
                 
                 // 移除遮罩
                 const overlay = document.getElementById('auth-overlay');
